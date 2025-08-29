@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CordDis</title>
+<link rel="icon" type="image/png" href="https://file.garden/Z43SqDt67TpUFO8v/retouch_2025031817385428.png">
+
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f5f7fa;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    transition: 0.3s;
+  }
+  .dark-mode { background: #121212; color: #f1f1f1; }
+  header {
+    background: #5865f2;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: bold;
+  }
+  .container {
+    max-width: 600px;
+    margin: 20px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .dark-mode .container {
+    background: #1e1e1e;
+    box-shadow: 0 4px 12px rgba(255,255,255,0.05);
+  }
+  button {
+    background: #5865f2;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 5px 0;
+    transition: background 0.2s;
+  }
+  button:hover { background: #4752c4; }
+  input {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+  .chat-box {
+    height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 8px;
+    background: #fafafa;
+    margin-bottom: 10px;
+  }
+  .dark-mode .chat-box { background: #2a2a2a; border-color: #444; }
+  .message {
+    margin: 5px 0;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #e3e5eb;
+    word-wrap: break-word;
+  }
+  .dark-mode .message { background: #3a3a3a; }
+  .message strong { color: #5865f2; }
+  .message-time { font-size: 0.75em; color: grey; margin-left: 5px; }
+  .profile-settings { cursor: pointer; font-size: 20px; float: right; }
+  #profileDiv {
+    display: none;
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 8px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+  }
+  .dark-mode #profileDiv { background: #2a2a2a; border-color: #555; }
+  .room-buttons button { margin-right: 5px; }
+  .chat-input { display: flex; gap: 8px; align-items: center; }
+  .chat-input input[type="text"] { flex-grow: 1; }
+  .chat-input #imageUpload { display: none; }
+</style>
+</head>
+<body>
+<header>
+  CordDis
+  <span class="profile-settings" onclick="showProfileSettings()">✏️</span>
+</header>
+
+<div class="container" id="loginDiv">
+  <h2>Login</h2>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <p id="loginError" style="color:red;"></p>
+</div>
+
+<div class="container" id="chatDiv" style="display:none;">
+  <div class="room-buttons">
+    <button onclick="switchRoom('general')">General</button>
+    <button onclick="switchRoom('memes')">Memes</button>
+    <button onclick="switchRoom('school')">School</button>
+    <button onclick="switchRoom('update')">Updates</button>
+  </div>
+  <div class="chat-box" id="chatBox"></div>
+  <div class="chat-input">
+    <input type="text" id="messageInput" placeholder="Type a message (max 50 chars)" maxlength="50">
+    <input type="file" id="imageUpload" accept="image/*" onchange="sendImage()">
+    <button id="imageButton" style="display:none;" onclick="document.getElementById('imageUpload').click()">🖼️</button>
+    <button onclick="sendMessage()">Send</button>
+  </div>
+  <button onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
+</div>
+
+<div class="container" id="profileDiv">
+  <h3>Update Display Name</h3>
+  <input type="text" id="newName" placeholder="Enter new name">
+  <button onclick="updateProfile()">Save</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.2.0/firebase-analytics.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.2.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.2.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC3DOc5i9j77tZnb9_eVAOL0Nz1lW3QlYk",
+  authDomain: "chatty-4ee10.firebaseapp.com",
+  projectId: "chatty-4ee10",
+  storageBucket: "chatty-4ee10.firebasestorage.app",
+  messagingSenderId: "167762737225",
+  appId: "1:167762737225:web:7b17464484e511466ce798",
+  measurementId: "G-V18W2ZBMBV"
+};
+
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentRoom = 'general';
+let currentUser;
+let lastMessageTime = 0;
+
+window.login = function() {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const loginError = document.getElementById('loginError');
+  loginError.textContent = '';
+
+  if (!email || !password) {
+    loginError.textContent = "Please enter both email and password.";
+    return;
+  }
+
+  signInWithEmailAndPassword(auth, email, password)
+    .then(async (userCredential) => {
+      currentUser = userCredential.user;
+      const userDoc = await getDoc(doc(db,"users",currentUser.uid));
+      if(userDoc.exists()){
+        currentUser.displayName = userDoc.data().name || currentUser.email;
+      } else {
+        currentUser.displayName = currentUser.email;
+      }
+      document.getElementById('loginDiv').style.display='none';
+      document.getElementById('chatDiv').style.display='block';
+      loadMessages();
+    })
+    .catch(error => { loginError.textContent="Login failed: "+error.message; });
+};
+
+window.sendMessage = function() {
+  if (!currentUser) return;
+
+  const now = Date.now();
+  if(now - lastMessageTime < 3000){
+    alert("Wait 3 seconds before sending another message.");
+    return;
+  }
+
+  const msgInput = document.getElementById('messageInput');
+  let text = msgInput.value.trim();
+  if(!text) return;
+  if(text.length>50){ alert("Message max 50 characters."); return; }
+
+  addDoc(collection(db,currentRoom),{
+    text: text,
+    user: currentUser.displayName||currentUser.email,
+    timestamp: new Date()
+  });
+  msgInput.value='';
+  lastMessageTime = now;
+};
+
+window.sendImage = function() {
+  const file = document.getElementById('imageUpload').files[0];
+  if(!file || currentRoom!=='memes') return;
+
+  const reader = new FileReader();
+  reader.onloadend = function(){
+    addDoc(collection(db,currentRoom),{
+      image: reader.result,
+      user: currentUser.displayName||currentUser.email,
+      timestamp: new Date()
+    });
+    document.getElementById('imageUpload').value='';
+  };
+  reader.readAsDataURL(file);
+};
+
+window.loadMessages = function(){
+  const chatBox = document.getElementById('chatBox');
+  chatBox.innerHTML='';
+  onSnapshot(collection(db,currentRoom), snapshot=>{
+    chatBox.innerHTML='';
+    const messages = snapshot.docs.map(doc=>doc.data());
+    messages.sort((a,b)=>a.timestamp - b.timestamp);
+    messages.forEach(message=>{
+      let div=document.createElement('div');
+      div.classList.add('message');
+      const msgTime = new Date(message.timestamp.seconds*1000).toLocaleTimeString();
+      if(message.text){
+        div.innerHTML=`<strong>${message.user}</strong>: ${message.text} <span class="message-time">(${msgTime})</span>`;
+      } else if(message.image){
+        div.innerHTML=`<strong>${message.user}</strong>: <img src="${message.image}" /> <span class="message-time">(${msgTime})</span>`;
+      }
+      chatBox.appendChild(div);
+    });
+  });
+};
+
+window.switchRoom = function(room){
+  currentRoom=room;
+  document.getElementById('imageButton').style.display=(room==='memes')?'inline-block':'none';
+  loadMessages();
+};
+
+window.toggleDarkMode = function(){ document.body.classList.toggle('dark-mode'); };
+window.showProfileSettings = function(){ document.getElementById('profileDiv').style.display='block'; };
+
+window.updateProfile = function(){
+  const newName = document.getElementById('newName').value;
+  if(newName){
+    setDoc(doc(db,"users",currentUser.uid),{name:newName},{merge:true})
+    .then(()=>{currentUser.displayName=newName; document.getElementById('profileDiv').style.display='none';});
+  }
+};
+</script>
+</body>
+</html>
