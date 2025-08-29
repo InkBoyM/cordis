@@ -110,7 +110,22 @@
     <button onclick="switchRoom('memes')">Memes</button>
     <button onclick="switchRoom('school')">School</button>
     <button onclick="switchRoom('update')">Updates</button>
+    <button id="privateServerButton" onclick="togglePrivateServers()">Private Servers</button>
   </div>
+
+  <div class="container" id="privateServersDiv" style="display:none;">
+    <h3>Private Servers</h3>
+    <div id="myServers"></div>
+    <button onclick="showCreateServerForm()">+ Create Server</button>
+
+    <div id="createServerForm" style="display:none; margin-top:10px;">
+      <input type="text" id="newServerName" placeholder="Server Name">
+      <label><input type="checkbox" id="allowImages"> Allow Images (its the checkbox)</label>
+      <input type="text" id="inviteEmails" placeholder="Ex: e@e.com, e1@e.com also btw to /settings in chat for secret">
+      <button onclick="createServer()">Create</button>
+    </div>
+  </div>
+
   <div class="chat-box" id="chatBox"></div>
   <div class="chat-input">
     <input type="text" id="messageInput" placeholder="Type a message (max 50 chars)" maxlength="50">
@@ -152,6 +167,8 @@ let currentRoom = 'general';
 let currentUser;
 let lastMessageTime = 0;
 
+let currentPrivateServer = null;
+
 window.login = function() {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
@@ -179,7 +196,7 @@ window.login = function() {
     .catch(error => { loginError.textContent="Login failed: "+error.message; });
 };
 
-window.sendMessage = function() {
+window.sendMessage = async function() {
   if (!currentUser) return;
 
   const now = Date.now();
@@ -193,7 +210,16 @@ window.sendMessage = function() {
   if(!text) return;
   if(text.length>50){ alert("Message max 50 characters."); return; }
 
-  addDoc(collection(db,currentRoom),{
+  // Handle /settings for private server creator
+  if(currentPrivateServer && text.startsWith("/settings") && currentPrivateServer.creator===currentUser.email){
+    alert("Server settings menu to be implemented"); 
+    msgInput.value='';
+    return;
+  }
+
+  const colRef = currentPrivateServer ? collection(db, "privateServers", currentPrivateServer.id, "messages") : collection(db, currentRoom);
+
+  await addDoc(colRef,{
     text: text,
     user: currentUser.displayName||currentUser.email,
     timestamp: new Date()
@@ -204,11 +230,12 @@ window.sendMessage = function() {
 
 window.sendImage = function() {
   const file = document.getElementById('imageUpload').files[0];
-  if(!file || currentRoom!=='memes') return;
+  if(!file || (currentPrivateServer && !currentPrivateServer.allowImages) || (currentRoom!=='memes' && !currentPrivateServer)) return;
 
   const reader = new FileReader();
   reader.onloadend = function(){
-    addDoc(collection(db,currentRoom),{
+    const colRef = currentPrivateServer ? collection(db, "privateServers", currentPrivateServer.id, "messages") : collection(db,currentRoom);
+    addDoc(colRef,{
       image: reader.result,
       user: currentUser.displayName||currentUser.email,
       timestamp: new Date()
@@ -221,7 +248,9 @@ window.sendImage = function() {
 window.loadMessages = function(){
   const chatBox = document.getElementById('chatBox');
   chatBox.innerHTML='';
-  onSnapshot(collection(db,currentRoom), snapshot=>{
+  const colRef = currentPrivateServer ? collection(db, "privateServers", currentPrivateServer.id, "messages") : collection(db,currentRoom);
+
+  onSnapshot(colRef, snapshot=>{
     chatBox.innerHTML='';
     const messages = snapshot.docs.map(doc=>doc.data());
     messages.sort((a,b)=>a.timestamp - b.timestamp);
@@ -240,6 +269,7 @@ window.loadMessages = function(){
 };
 
 window.switchRoom = function(room){
+  currentPrivateServer = null;
   currentRoom=room;
   document.getElementById('imageButton').style.display=(room==='memes')?'inline-block':'none';
   loadMessages();
@@ -254,6 +284,63 @@ window.updateProfile = function(){
     setDoc(doc(db,"users",currentUser.uid),{name:newName},{merge:true})
     .then(()=>{currentUser.displayName=newName; document.getElementById('profileDiv').style.display='none';});
   }
+};
+
+// ---------------- Private Servers Functions ----------------
+const serversRef = collection(db, "privateServers");
+
+window.togglePrivateServers = function() {
+  const div = document.getElementById('privateServersDiv');
+  div.style.display = div.style.display === 'none' ? 'block' : 'none';
+  if(div.style.display==='block') loadPrivateServers();
+};
+
+window.showCreateServerForm = function() {
+  const form = document.getElementById('createServerForm');
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+};
+
+window.createServer = async function() {
+  const name = document.getElementById('newServerName').value.trim();
+  const allowImages = document.getElementById('allowImages').checked;
+  const emails = document.getElementById('inviteEmails').value.split(',').map(e=>e.trim()).filter(Boolean);
+  if(!name || emails.length===0){ alert("Enter name and at least one email"); return; }
+
+  if(!emails.includes(currentUser.email)) emails.push(currentUser.email);
+
+  const docRef = await addDoc(serversRef,{
+    name: name,
+    allowImages: allowImages,
+    members: emails,
+    creator: currentUser.email
+  });
+  document.getElementById('createServerForm').style.display='none';
+  loadPrivateServers();
+};
+
+window.loadPrivateServers = function() {
+  const myServersDiv = document.getElementById('myServers');
+  myServersDiv.innerHTML='';
+
+  onSnapshot(serversRef, snapshot=>{
+    myServersDiv.innerHTML='';
+    snapshot.docs.forEach(docSnap=>{
+      const server = docSnap.data();
+      if(server.members.includes(currentUser.email)){
+        const btn = document.createElement('button');
+        btn.textContent = server.name;
+        btn.onclick = () => switchPrivateServer(docSnap.id, server);
+        myServersDiv.appendChild(btn);
+      }
+    });
+  });
+};
+
+window.switchPrivateServer = function(id, server){
+  currentPrivateServer = {id, ...server};
+  currentRoom = id;
+  document.getElementById('imageButton').style.display = server.allowImages?'inline-block':'none';
+  loadMessages();
 };
 </script>
 </body>
