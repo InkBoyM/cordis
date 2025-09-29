@@ -128,7 +128,7 @@
 
   <div class="chat-box" id="chatBox"></div>
   <div class="chat-input">
-    <input type="text" id="messageInput" placeholder="Type a message (max 50 chars)" maxlength="50">
+    <input type="text" id="messageInput" placeholder="Type a message (max 100 chars)" maxlength="100">
     <input type="file" id="imageUpload" accept="image/*" onchange="sendImage()">
     <button id="imageButton" style="display:none;" onclick="document.getElementById('imageUpload').click()">🖼️</button>
     <button onclick="sendMessage()">Send</button>
@@ -210,9 +210,8 @@ window.sendMessage = async function() {
   if(!text) return;
   if(text.length>50){ alert("Message max 50 characters."); return; }
 
-  // Handle /settings for private server creator
   if(currentPrivateServer && text.startsWith("/settings") && currentPrivateServer.creator===currentUser.email){
-    alert("Server settings menu to be implemented"); 
+    alert("settings not  done"); 
     msgInput.value='';
     return;
   }
