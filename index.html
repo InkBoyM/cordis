@@ -128,7 +128,7 @@
 
   <div class="chat-box" id="chatBox"></div>
   <div class="chat-input">
-    <input type="text" id="messageInput" placeholder="Type a message (max 100 chars)" maxlength="100">
+    <input type="text" id="messageInput" placeholder="Type a message (max 250 chars)" maxlength="250">
     <input type="file" id="imageUpload" accept="image/*" onchange="sendImage()">
     <button id="imageButton" style="display:none;" onclick="document.getElementById('imageUpload').click()">🖼️</button>
     <button onclick="sendMessage()">Send</button>
@@ -166,8 +166,23 @@ const db = getFirestore(app);
 let currentRoom = 'general';
 let currentUser;
 let lastMessageTime = 0;
-
 let currentPrivateServer = null;
+
+// ---------------- LocalStorage Restore ----------------
+window.addEventListener("load", () => {
+  // Restore dark mode
+  if (localStorage.getItem("darkMode") === "true") {
+    document.body.classList.add("dark-mode");
+  }
+  // Restore login
+  const savedEmail = localStorage.getItem("email");
+  const savedPassword = localStorage.getItem("password");
+  if (savedEmail && savedPassword) {
+    document.getElementById("email").value = savedEmail;
+    document.getElementById("password").value = savedPassword;
+    login();
+  }
+});
 
 window.login = function() {
   const email = document.getElementById('email').value;
@@ -192,6 +207,10 @@ window.login = function() {
       document.getElementById('loginDiv').style.display='none';
       document.getElementById('chatDiv').style.display='block';
       loadMessages();
+
+      // Save login info locally
+      localStorage.setItem("email", email);
+      localStorage.setItem("password", password);
     })
     .catch(error => { loginError.textContent="Login failed: "+error.message; });
 };
@@ -208,7 +227,7 @@ window.sendMessage = async function() {
   const msgInput = document.getElementById('messageInput');
   let text = msgInput.value.trim();
   if(!text) return;
-  if(text.length>50){ alert("Message max 50 characters."); return; }
+  if(text.length>251){ alert("Message max 250 characters."); return; }
 
   if(currentPrivateServer && text.startsWith("/settings") && currentPrivateServer.creator===currentUser.email){
     alert("settings not  done"); 
@@ -274,7 +293,11 @@ window.switchRoom = function(room){
   loadMessages();
 };
 
-window.toggleDarkMode = function(){ document.body.classList.toggle('dark-mode'); };
+window.toggleDarkMode = function(){ 
+  document.body.classList.toggle('dark-mode'); 
+  localStorage.setItem("darkMode", document.body.classList.contains("dark-mode"));
+};
+
 window.showProfileSettings = function(){ document.getElementById('profileDiv').style.display='block'; };
 
 window.updateProfile = function(){
@@ -341,6 +364,14 @@ window.switchPrivateServer = function(id, server){
   document.getElementById('imageButton').style.display = server.allowImages?'inline-block':'none';
   loadMessages();
 };
+
+// ---------------- Enter-to-Send ----------------
+document.getElementById("messageInput").addEventListener("keydown", function(e) {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
 </script>
 </body>
 </html>
