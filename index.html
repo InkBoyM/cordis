@@ -9,8 +9,7 @@
   * { box-sizing: border-box; }
   body { margin:0; padding:0; font-family:'Segoe UI',sans-serif; display:flex; height:100vh; transition:.3s; background:#f5f7fa; color:#333; }
   .dark-mode { background:#121212; color:#f1f1f1; }
-
-  /* Sidebar */
+  
   #sidebar { width:220px; background:#5865f2; color:white; display:flex; flex-direction:column; padding:10px; display:none; }
   #sidebar h2 { text-align:center; margin-bottom:20px; }
   #rooms, #privateServersDiv { flex:1; overflow-y:auto; }
@@ -18,8 +17,7 @@
   #rooms button:hover, #myServers button:hover { background:rgba(255,255,255,0.25); }
   #sidebar > div:last-child { margin-top:auto; }
 
-  /* Main chat */
-  #main { flex:1; display:none; flex-direction:column; }
+  #main { flex:1; display:none; flex-direction:column; } 
   #chatHeader { background:#e3e5eb; padding:10px; font-weight:bold; display:flex; justify-content:space-between; align-items:center; }
   .dark-mode #chatHeader { background:#2a2a2a; }
   #chatBox { flex:1; padding:15px; overflow-y:auto; background:#fafafa; }
@@ -37,9 +35,8 @@
   #messageInput { flex:1; padding:10px; border-radius:8px; border:1px solid #ccc; }
   #chatInputBar button { background:#5865f2; border:none; color:white; padding:10px 15px; border-radius:8px; cursor:pointer; }
   #chatInputBar button:hover { background:#4752c4; }
-  #imageButton { display: none; } /* Hide image button by default */
+  #imageButton { display: none; }
 
-  /* Login */
   #loginDiv { position:absolute; top:0; left:0; right:0; bottom:0; display:flex; align-items:center; justify-content:center; background:#f5f7fa; }
   .dark-mode #loginDiv { background:#121212; }
   #loginBox { background:white; padding:30px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.2); width:300px; text-align:center; }
@@ -49,7 +46,6 @@
   #loginBox button:hover { background:#4752c4; }
   #loginError { color:red; min-height:18px; }
 
-  /* Profile */
   #profileDiv { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:20px; border-radius:12px; display:none; z-index:1000; width:300px; text-align:center; }
   .dark-mode #profileDiv { background:#2a2a2a; color:white; }
   #profileDiv .pfp-large { width:84px; height:84px; border-radius:50%; object-fit:cover; margin:0 auto 10px; }
@@ -142,7 +138,7 @@ async function fetchUserProfile(uid){
   return userProfiles[uid];
 }
 
-// --- LOGIN ---
+// stuff for login
 window.login = function(){
   const email=document.getElementById('email').value;
   const password=document.getElementById('password').value;
@@ -166,7 +162,7 @@ window.login = function(){
   }).catch(e=>{ loginError.textContent="Login failed: "+e.message; });
 };
 
-// --- LOAD MESSAGES ---
+// things to load messages
 window.loadMessages = function() {
     const chatBox = document.getElementById('chatBox');
     const colRef = currentPrivateServer ?
@@ -195,7 +191,7 @@ window.loadMessages = function() {
                 bodyHtml = `<div class="body">${m.text}</div>`;
             } else if (m.image) {
                 bodyHtml = `<div class="body"><img src="${m.image}"></div>`;
-            }
+            } 
             div.innerHTML = `
               <img class="pfp" src="${profile.pfp}">
               <div class="message-content">
@@ -209,7 +205,7 @@ window.loadMessages = function() {
     });
 };
 
-// --- OTHER FUNCTIONS ---
+// other cool functions hi inspect user
 window.switchRoom = function(room){
   currentRoom=room;
   currentPrivateServer=null;
@@ -258,7 +254,7 @@ window.updateProfile=async function(){
   loadMessages();
 };
 
-// --- PRIVATE SERVERS ---
+// private server stuff
 const serversRef=collection(db,"privateServers");
 window.togglePrivateServers=function(){
   const div=document.getElementById('privateServersDiv'); div.style.display=div.style.display==='none'?'block':'none';
@@ -295,7 +291,7 @@ window.loadPrivateServers=function(){
     });
   });
 };
-
+// goodbye inspect element user hope you had a fun time looking at the code and remeber CUSTOM CLIENT = BAN!
 document.getElementById("messageInput").addEventListener("keydown", e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); sendMessage(); } });
 document.getElementById('imageUpload').addEventListener('change', sendImage);
 window.addEventListener("load",()=>{
