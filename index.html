@@ -1,304 +1,370 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CordDis</title>
-<link rel="icon" type="image/png" href="https://file.garden/Z43SqDt67TpUFO8v/retouch_2025031817385428.png">
-<style>
-  * { box-sizing: border-box; }
-  body { margin:0; padding:0; font-family:'Segoe UI',sans-serif; display:flex; height:100vh; transition:.3s; background:#f5f7fa; color:#333; }
-  .dark-mode { background:#121212; color:#f1f1f1; }
-  
-  #sidebar { width:220px; background:#5865f2; color:white; display:flex; flex-direction:column; padding:10px; display:none; }
-  #sidebar h2 { text-align:center; margin-bottom:20px; }
-  #rooms, #privateServersDiv { flex:1; overflow-y:auto; }
-  #rooms button, #myServers button { width:100%; padding:10px; margin:5px 0; background:rgba(255,255,255,0.1); border:none; color:white; border-radius:6px; cursor:pointer; text-align:left; }
-  #rooms button:hover, #myServers button:hover { background:rgba(255,255,255,0.25); }
-  #sidebar > div:last-child { margin-top:auto; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CordDis</title>
+    <link rel="icon" type="image/png" href="https://file.garden/Z43SqDt67TpUFO8v/retouch_2025031817385428.png">
+    <style>
+      * { box-sizing: border-box; }
+      body { margin:0; padding:0; font-family:'Segoe UI',sans-serif; display:flex; height:100vh; transition:.3s; background:#f5f7fa; color:#333; }
+      .dark-mode { background:#121212; color:#f1f1f1; }
 
-  #main { flex:1; display:none; flex-direction:column; } 
-  #chatHeader { background:#e3e5eb; padding:10px; font-weight:bold; display:flex; justify-content:space-between; align-items:center; }
-  .dark-mode #chatHeader { background:#2a2a2a; }
-  #chatBox { flex:1; padding:15px; overflow-y:auto; background:#fafafa; }
-  .dark-mode #chatBox { background:#1e1e1e; }
-  .message { display:flex; gap:10px; margin:8px 0; padding:8px 12px; border-radius:8px; background:#e3e5eb; word-wrap:break-word; align-items:flex-start; }
-  .dark-mode .message { background:#2f2f2f; }
-  .pfp { width:40px; height:40px; border-radius:50%; object-fit:cover; flex-shrink:0; }
-  .message-content { flex:1; }
-  .message .meta { display:flex; align-items:center; gap:8px; font-size:0.95em; margin-bottom:4px; }
-  .message .meta strong { color:#5865f2; }
-  .message .body img { max-width:150px; border-radius:8px; margin-top:4px; }
-  .message-time { font-size:.75em; color:grey; margin-left:5px; }
-  #chatInputBar { display:flex; padding:10px; background:#e3e5eb; gap:8px; }
-  .dark-mode #chatInputBar { background:#2a2a2a; }
-  #messageInput { flex:1; padding:10px; border-radius:8px; border:1px solid #ccc; }
-  #chatInputBar button { background:#5865f2; border:none; color:white; padding:10px 15px; border-radius:8px; cursor:pointer; }
-  #chatInputBar button:hover { background:#4752c4; }
-  #imageButton { display: none; }
-
-  #loginDiv { position:absolute; top:0; left:0; right:0; bottom:0; display:flex; align-items:center; justify-content:center; background:#f5f7fa; }
-  .dark-mode #loginDiv { background:#121212; }
-  #loginBox { background:white; padding:30px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.2); width:300px; text-align:center; }
-  .dark-mode #loginBox { background:#1e1e1e; color:white; }
-  #loginBox input, #loginBox button { width:100%; margin:8px 0; padding:10px; border-radius:8px; border:1px solid #ccc; }
-  #loginBox button { background:#5865f2; color:white; border:none; cursor:pointer; }
-  #loginBox button:hover { background:#4752c4; }
-  #loginError { color:red; min-height:18px; }
-
-  #profileDiv { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:20px; border-radius:12px; display:none; z-index:1000; width:300px; text-align:center; }
-  .dark-mode #profileDiv { background:#2a2a2a; color:white; }
-  #profileDiv .pfp-large { width:84px; height:84px; border-radius:50%; object-fit:cover; margin:0 auto 10px; }
-  #profileDiv input[type="text"], #profileDiv input[type="file"], #profileDiv button { width:100%; margin:6px 0; padding:8px; border-radius:6px; border:1px solid #ccc; }
-</style>
+      #sidebar { width:220px; background:#5865f2; color:white; display:flex; flex-direction:column; padding:10px; display:none; }
+      #sidebar h2 { text-align:center; margin-bottom:20px; }
+      #rooms, #privateServersDiv { flex:1; overflow-y:auto; }
+      #rooms button, #myServers button { width:100%; padding:10px; margin:5px 0; background:rgba(255,255,255,0.1); border:none; color:white; border-radius:6px; cursor:pointer; text-align:left; }
+      #rooms button:hover, #myServers button:hover { background:rgba(255,255,255,0.25); }
+      #sidebar > div:last-child { margin-top:auto; }
+      #main { flex:1; display:none; flex-direction:column; }
+      #chatHeader { background:#e3e5eb; padding:10px; font-weight:bold; display:flex; justify-content:space-between; align-items:center; }
+      .dark-mode #chatHeader { background:#2a2a2a; }
+      #chatBox { flex:1; padding:15px; overflow-y:auto; background:#fafafa; }
+      .dark-mode #chatBox { background:#1e1e1e; }
+      .message { display:flex; gap:10px; margin:8px 0; padding:8px 12px; border-radius:8px; background:#e3e5eb; word-wrap:break-word; align-items:flex-start; }
+      .dark-mode .message { background:#2f2f2f; }
+      .pfp { width:40px; height:40px; border-radius:50%; object-fit:cover; flex-shrink:0; }
+      .message-content { flex:1; }
+      .message .meta { display:flex; align-items:center; gap:8px; font-size:0.95em; margin-bottom:4px; }
+      .message .meta strong { color:#5865f2; }
+      .message .body img { max-width:150px; border-radius:8px; margin-top:4px; }
+      .message-time { font-size:.75em; color:grey; margin-left:5px; }
+      #chatInputBar { display:flex; padding:10px; background:#e3e5eb; gap:8px; }
+      .dark-mode #chatInputBar { background:#2a2a2a; }
+      #messageInput { flex:1; padding:10px; border-radius:8px; border:1px solid #ccc; }
+      #chatInputBar button { background:#5865f2; border:none; color:white; padding:10px 15px; border-radius:8px; cursor:pointer; }
+      #chatInputBar button:hover { background:#4752c4; }
+      #imageButton { display: none; }
+      #loginDiv { position:absolute; top:0; left:0; right:0; bottom:0; display:flex; align-items:center; justify-content:center; background:#f5f7fa; }
+      .dark-mode #loginDiv { background:#121212; }
+      #loginBox { background:white; padding:30px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.2); width:300px; text-align:center; }
+      .dark-mode #loginBox { background:#1e1e1e; color:white; }
+      #loginBox input, #loginBox button { width:100%; margin:8px 0; padding:10px; border-radius:8px; border:1px solid #ccc; }
+      #loginBox button { background:#5865f2; color:white; border:none; cursor:pointer; }
+      #loginBox button:hover { background:#4752c4; }
+      #loginError { color:red; min-height:18px; }
+      #profileDiv { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:20px; border-radius:12px; display:none; z-index:1000; width:300px; text-align:center; }
+      .dark-mode #profileDiv { background:#2a2a2a; color:white; }
+      #profileDiv .pfp-large { width:84px; height:84px; border-radius:50%; object-fit:cover; margin:0 auto 10px; }
+      #profileDiv input[type="text"], #profileDiv input[type="file"], #profileDiv button { width:100%; margin:6px 0; padding:8px; border-radius:6px; border:1px solid #ccc; }
+    </style>
 </head>
 <body>
-<div id="loginDiv">
-  <div id="loginBox">
-    <h2>Please Login</h2>
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-    <p id="loginError"></p>
-  </div>
-</div>
-
-<div id="sidebar">
-  <h2>CordDis V2.0</h2>
-  <div id="rooms">
-    <button onclick="switchRoom('general')">General</button>
-    <button onclick="switchRoom('memes')">Memes</button>
-    <button onclick="switchRoom('school')">School</button>
-    <button onclick="switchRoom('update')">Updates</button>
-    <button onclick="togglePrivateServers()">+ Private Servers</button>
-  </div>
-  <div id="privateServersDiv" style="display:none">
-    <h3>My Servers</h3>
-    <div id="myServers"></div>
-    <button onclick="showCreateServerForm()">+ Create Server</button>
-    <div id="createServerForm" style="display:none">
-      <input type="text" id="newServerName" placeholder="Server Name">
-      <label><input type="checkbox" id="allowImages"> Allow Images</label>
-      <input type="text" id="inviteEmails" placeholder="Invite emails, comma separated">
-      <button onclick="createServer()">Create</button>
+    <div id="loginDiv">
+      <div id="loginBox">
+        <h2>Please Login</h2>
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <p id="loginError"></p>
+      </div>
     </div>
-  </div>
-  <div style="margin-top:auto;">
-    <button onclick="toggleDarkMode()">🌙 Dark Mode</button>
-    <button onclick="openProfile()">✏️ Edit Name/PFP</button>
-  </div>
-</div>
-
-<div id="main">
-  <div id="chatHeader">Welcome</div>
-  <div id="chatBox"></div>
-  <div id="chatInputBar">
-    <input type="text" id="messageInput" placeholder="Type a message" maxlength="250">
-    <input type="file" id="imageUpload" accept="image/*" style="display:none">
-    <button id="imageButton" onclick="document.getElementById('imageUpload').click()">🖼️</button>
-    <button onclick="sendMessage()">Send</button>
-  </div>
-</div>
-
-<div id="profileDiv">
-  <img id="profilePfp" class="pfp-large" src="https://braverplayers.org/wp-content/uploads/2022/09/braver-blank-pfp.jpg">
-  <input type="file" id="newPfp" accept="image/*" onchange="previewPfp(event)">
-  <input type="text" id="newName" placeholder="Enter new name">
-  <button onclick="updateProfile()">Save</button>
-  <button onclick="document.getElementById('profileDiv').style.display='none'">Close</button>
-</div>
+    <div id="sidebar">
+      <h2>CordDis V2.0</h2>
+      <div id="rooms">
+        <button onclick="switchRoom('general')">General</button>
+        <button onclick="switchRoom('memes')">Memes</button>
+        <button onclick="switchRoom('school')">School</button>
+        <button onclick="switchRoom('update')">Updates</button>
+        <button onclick="togglePrivateServers()">+ Private Servers</button>
+      </div>
+      <div id="privateServersDiv" style="display:none">
+        <h3>My Servers</h3>
+        <div id="myServers"></div>
+        <button onclick="showCreateServerForm()">+ Create Server</button>
+        <div id="createServerForm" style="display:none">
+          <input type="text" id="newServerName" placeholder="Server Name">
+          <label><input type="checkbox" id="allowImages"> Allow Images</label>
+          <input type="text" id="inviteEmails" placeholder="Invite emails, comma separated">
+          <button onclick="createServer()">Create</button>
+        </div>
+      </div>
+      <div style="margin-top:auto;">
+        <button onclick="toggleDarkMode()">🌙 Dark Mode</button>
+        <button onclick="openProfile()">✏️ Edit Name/PFP</button>
+      </div>
+    </div>
+    <div id="main">
+      <div id="chatHeader">Welcome</div>
+      <div id="chatBox"></div>
+      <div id="chatInputBar">
+        <input type="text" id="messageInput" placeholder="Type a message" maxlength="250">
+        <input type="file" id="imageUpload" accept="image/*" style="display:none">
+        <button id="imageButton" onclick="document.getElementById('imageUpload').click()">🖼️</button>
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+    <div id="profileDiv">
+      <img id="profilePfp" class="pfp-large" src="https://braverplayers.org/wp-content/uploads/2022/09/braver-blank-pfp.jpg">
+      <input type="file" id="newPfp" accept="image/*" onchange="previewPfp(event)">
+      <input type="text" id="newName" placeholder="Enter new name">
+      <button onclick="updateProfile()">Save</button>
+      <button onclick="document.getElementById('profileDiv').style.display='none'">Close</button>
+    </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.2.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.2.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.2.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.2.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey:"AIzaSyC3DOc5i9j77tZnb9_eVAOL0Nz1lW3QlYk",
-  authDomain:"chatty-4ee10.firebaseapp.com",
-  projectId:"chatty-4ee10",
-  storageBucket:"chatty-4ee10.firebasestorage.app",
-  messagingSenderId:"167762737225",
-  appId:"1:167762737225:web:7b17464484e511466ce798"
-};
+    const firebaseConfig = {
+      apiKey: "AIzaSyC3DOc5i9j77tZnb9_eVAOL0Nz1lW3QlYk",
+      authDomain: "chatty-4ee10.firebaseapp.com",
+      projectId: "chatty-4ee10",
+      storageBucket: "chatty-4ee10.firebasestorage.app",
+      messagingSenderId: "167762737225",
+      appId: "1:167762737225:web:7b17464484e511466ce798"
+    };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-const defaultPfp="https://braverplayers.org/wp-content/uploads/2022/09/braver-blank-pfp.jpg";
-let currentUser, currentUserPfp=defaultPfp, currentRoom='general', currentPrivateServer=null, newPfpData=null, lastMessageTime=0;
-let userProfiles={};
+    const defaultPfp = "https://braverplayers.org/wp-content/uploads/2022/09/braver-blank-pfp.jpg";
+    let currentUser, currentUserPfp = defaultPfp, currentRoom = 'general', currentPrivateServer = null, newPfpData = null, lastMessageTime = 0;
+    let userProfiles = {};
 
-async function fetchUserProfile(uid){
-  if(userProfiles[uid]) return userProfiles[uid];
-  const uDoc = await getDoc(doc(db,"users",uid));
-  if(uDoc.exists()){ const data=uDoc.data(); userProfiles[uid]={ name:data.name||uid, pfp:data.pfp||defaultPfp }; }
-  else userProfiles[uid]={ name:uid, pfp:defaultPfp };
-  return userProfiles[uid];
-}
+    async function fetchUserProfile(uid) {
+      if (userProfiles[uid]) return userProfiles[uid];
+      const uDoc = await getDoc(doc(db, "users", uid));
+      if (uDoc.exists()) {
+        const data = uDoc.data();
+        userProfiles[uid] = { name: data.name || uid, pfp: data.pfp || defaultPfp };
+      } else userProfiles[uid] = { name: uid, pfp: defaultPfp };
+      return userProfiles[uid];
+    }
 
-// stuff for login
-window.login = function(){
-  const email=document.getElementById('email').value;
-  const password=document.getElementById('password').value;
-  const loginError=document.getElementById('loginError');
-  loginError.textContent='';
-  if(!email||!password){ loginError.textContent="Enter email & password"; return; }
-  signInWithEmailAndPassword(auth,email,password).then(async userCred=>{
-    currentUser=userCred.user;
-    const userRef=doc(db,"users",currentUser.uid);
-    const uDoc=await getDoc(userRef);
-    if(uDoc.exists()){ const data=uDoc.data(); currentUser.displayName=data.name||currentUser.email; currentUserPfp=data.pfp||defaultPfp; userProfiles[currentUser.uid]={ name:currentUser.displayName, pfp:currentUserPfp }; }
-    else{ currentUser.displayName=currentUser.email; currentUserPfp=defaultPfp; await setDoc(userRef,{name:currentUser.displayName,pfp:currentUserPfp}); userProfiles[currentUser.uid]={ name:currentUser.displayName, pfp:currentUserPfp }; }
-    localStorage.setItem("email",email);
-    localStorage.setItem("password",password);
-    document.getElementById('loginDiv').style.display='none';
-    document.getElementById('sidebar').style.display='flex';
-    document.getElementById('main').style.display='flex';
-    document.getElementById('chatHeader').textContent=""+currentRoom;
-    switchRoom(currentRoom);
-    loadPrivateServers();
-  }).catch(e=>{ loginError.textContent="Login failed: "+e.message; });
-};
+    // stuff for login
+    window.login = function() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const loginError = document.getElementById('loginError');
+      loginError.textContent = '';
+      if (!email || !password) {
+        loginError.textContent = "Enter email & password";
+        return;
+      }
+      signInWithEmailAndPassword(auth, email, password).then(async userCred => {
+        currentUser = userCred.user;
+        const userRef = doc(db, "users", currentUser.uid);
+        const uDoc = await getDoc(userRef);
+        if (uDoc.exists()) {
+          const data = uDoc.data();
+          currentUser.displayName = data.name || currentUser.email;
+          currentUserPfp = data.pfp || defaultPfp;
+          userProfiles[currentUser.uid] = { name: currentUser.displayName, pfp: currentUserPfp };
+        } else {
+          currentUser.displayName = currentUser.email;
+          currentUserPfp = defaultPfp;
+          await setDoc(userRef, { name: currentUser.displayName, pfp: currentUserPfp });
+          userProfiles[currentUser.uid] = { name: currentUser.displayName, pfp: currentUserPfp };
+        }
+        localStorage.setItem("email", email);
+        localStorage.setItem("password", password);
+        document.getElementById('loginDiv').style.display = 'none';
+        document.getElementById('sidebar').style.display = 'flex';
+        document.getElementById('main').style.display = 'flex';
+        document.getElementById('chatHeader').textContent = "" + currentRoom;
+        switchRoom(currentRoom);
+        loadPrivateServers();
+      }).catch(e => {
+        loginError.textContent = "Login failed: " + e.message;
+      });
+    };
 
-// things to load messages
-window.loadMessages = function() {
-    const chatBox = document.getElementById('chatBox');
-    const colRef = currentPrivateServer ?
-        collection(db, "privateServers", currentPrivateServer.id, "messages") :
-        collection(db, currentRoom);
+    // things to load messages
+    window.loadMessages = function() {
+        const chatBox = document.getElementById('chatBox');
+        const colRef = currentPrivateServer ?
+            collection(db, "privateServers", currentPrivateServer.id, "messages") :
+            collection(db, currentRoom);
 
-    onSnapshot(colRef, async snapshot => {
-        const messages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        messages.sort((a, b) => (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0));
-        const profilePromises = messages.map(m => {
-            if (m.userId) {
-                return fetchUserProfile(m.userId);
-            } else {
-                return Promise.resolve({ name: "Unknown", pfp: defaultPfp });
-            }
+        onSnapshot(colRef, async snapshot => {
+            const messages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            messages.sort((a, b) => (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0));
+            const profilePromises = messages.map(m => {
+                if (m.userId) {
+                    return fetchUserProfile(m.userId);
+                } else {
+                    return Promise.resolve({ name: "Unknown", pfp: defaultPfp });
+                }
+            });
+            const profiles = await Promise.all(profilePromises);
+            chatBox.innerHTML = '';
+            messages.forEach((m, index) => {
+                const profile = profiles[index];
+                const div = document.createElement('div');
+                div.classList.add('message');
+                const msgTime = m.timestamp ? new Date(m.timestamp.seconds * 1000).toLocaleTimeString() : "";
+                let bodyHtml = '';
+                if (m.text) {
+                    bodyHtml = `<div class="body">${m.text}</div>`;
+                } else if (m.image) {
+                    bodyHtml = `<div class="body"><img src="${m.image}"></div>`;
+                }
+                 div.innerHTML = `
+                  <img class="pfp" src="${profile.pfp}">
+                  <div class="message-content">
+                    <div class="meta"><strong>${profile.name}</strong> <span class="message-time">(${msgTime})</span></div>
+                    ${bodyHtml}
+                  </div>
+                `;
+                chatBox.appendChild(div);
+            });
+            chatBox.scrollTop = chatBox.scrollHeight;
         });
-        const profiles = await Promise.all(profilePromises);
-        chatBox.innerHTML = '';
-        messages.forEach((m, index) => {
-            const profile = profiles[index];
-            const div = document.createElement('div');
-            div.classList.add('message');
-            const msgTime = m.timestamp ? new Date(m.timestamp.seconds * 1000).toLocaleTimeString() : "";
-            let bodyHtml = '';
-            if (m.text) {
-                bodyHtml = `<div class="body">${m.text}</div>`;
-            } else if (m.image) {
-                bodyHtml = `<div class="body"><img src="${m.image}"></div>`;
-            } 
-            div.innerHTML = `
-              <img class="pfp" src="${profile.pfp}">
-              <div class="message-content">
-                <div class="meta"><strong>${profile.name}</strong> <span class="message-time">(${msgTime})</span></div>
-                ${bodyHtml}
-              </div>
-            `;
-            chatBox.appendChild(div);
+    };
+
+    // other cool functions hi inspect user
+    window.switchRoom = function(room) {
+      currentRoom = room;
+      currentPrivateServer = null;
+      document.getElementById('chatHeader').textContent = " " + room;
+      document.getElementById('imageButton').style.display = (room === 'memes') ? 'inline-block' : 'none';
+      loadMessages();
+    };
+
+    window.toggleDarkMode = function() {
+        document.body.classList.toggle('dark-mode');
+        localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+    };
+
+    window.sendMessage = async function() {
+      if (!currentUser) return;
+      if (Date.now() - lastMessageTime < 1000) {
+        alert("Wait 1 second to send another message lol how fast do  you want to say what u want to say there is a 250 limit its not that deep lil bro 💀");
+        return;
+      }
+      const msgInput = document.getElementById('messageInput');
+      let text = msgInput.value.trim();
+      if (!text) return;
+      const colRef = currentPrivateServer ? collection(db, "privateServers", currentPrivateServer.id, "messages") : collection(db, currentRoom);
+      await addDoc(colRef, { text, userId: currentUser.uid, timestamp: new Date() });
+      msgInput.value = '';
+      lastMessageTime = Date.now();
+    };
+
+    window.sendImage = function() {
+      const canSendImage = (currentRoom === 'memes') || (currentPrivateServer && currentPrivateServer.allowImages);
+      if (!canSendImage) return;
+
+      const file = document.getElementById('imageUpload').files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onloadend = async function() {
+        const colRef = currentPrivateServer ? collection(db, "privateServers", currentPrivateServer.id, "messages") : collection(db, currentRoom);
+        await addDoc(colRef, { image: reader.result, userId: currentUser.uid, timestamp: new Date() });
+        document.getElementById('imageUpload').value = '';
+      };
+      reader.readAsDataURL(file);
+    };
+
+    window.openProfile = function() {
+      document.getElementById('profileDiv').style.display = 'block';
+      document.getElementById('profilePfp').src = currentUserPfp;
+      document.getElementById('newName').value = currentUser.displayName;
+    };
+
+    window.previewPfp = function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onloadend = function() {
+        newPfpData = reader.result;
+        document.getElementById('profilePfp').src = newPfpData;
+      };
+      reader.readAsDataURL(file);
+    };
+
+    window.updateProfile = async function() {
+      if (!currentUser) return;
+      const newName = document.getElementById('newName').value.trim();
+      const data = {};
+      if (newName) {
+        data.name = newName;
+        currentUser.displayName = newName;
+      }
+      if (newPfpData) {
+        data.pfp = newPfpData;
+        currentUserPfp = newPfpData;
+      }
+      await setDoc(doc(db, "users", currentUser.uid), data, { merge: true });
+      userProfiles[currentUser.uid] = { name: currentUser.displayName, pfp: currentUserPfp };
+      document.getElementById('profileDiv').style.display = 'none';
+      newPfpData = null;
+      loadMessages();
+    };
+
+    // private server stuff
+    const serversRef = collection(db, "privateServers");
+    window.togglePrivateServers = function() {
+      const div = document.getElementById('privateServersDiv');
+      div.style.display = div.style.display === 'none' ? 'block' : 'none';
+      if (div.style.display === 'block') loadPrivateServers();
+    };
+
+    window.showCreateServerForm = function() {
+      const form = document.getElementById('createServerForm');
+      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    };
+
+    window.createServer = async function() {
+      const name = document.getElementById('newServerName').value.trim();
+      const allowImages = document.getElementById('allowImages').checked;
+      const emails = document.getElementById('inviteEmails').value.split(',').map(e => e.trim()).filter(Boolean);
+      if (!name || emails.length === 0) {
+        alert("Enter name and at least one email");
+        return;
+      }
+      if (!emails.includes(currentUser.email)) emails.push(currentUser.email);
+      await addDoc(serversRef, { name, allowImages, members: emails, creator: currentUser.email });
+      document.getElementById('createServerForm').style.display = 'none';
+      loadPrivateServers();
+    };
+
+    window.loadPrivateServers = function() {
+      const myServersDiv = document.getElementById('myServers');
+      myServersDiv.innerHTML = '';
+      onSnapshot(serversRef, snapshot => {
+        myServersDiv.innerHTML = '';
+        snapshot.docs.forEach(docSnap => {
+          const server = docSnap.data();
+          if (server.members.includes(currentUser.email)) {
+            const btn = document.createElement('button');
+            btn.textContent = server.name;
+            btn.onclick = () => {
+                currentPrivateServer = {id: docSnap.id, ...server};
+                currentRoom = docSnap.id;
+                document.getElementById('chatHeader').textContent = server.name;
+                document.getElementById('imageButton').style.display = server.allowImages ? 'inline-block' : 'none';
+                loadMessages();
+            };
+            myServersDiv.appendChild(btn);
+          }
         });
-        chatBox.scrollTop = chatBox.scrollHeight;
-    });
-};
+      });
+    };
 
-// other cool functions hi inspect user
-window.switchRoom = function(room){
-  currentRoom=room;
-  currentPrivateServer=null;
-  document.getElementById('chatHeader').textContent=" "+room;
-  document.getElementById('imageButton').style.display = (room === 'memes') ? 'inline-block' : 'none';
-  loadMessages();
-};
-window.toggleDarkMode=function(){ document.body.classList.toggle('dark-mode'); };
-window.sendMessage=async function(){
-  if(!currentUser) return;
-  if(Date.now()-lastMessageTime<1000){ alert("Wait 1 second to send another message lol how fast do  you want to say what u want to say there is a 250 limit its not that deep lil bro 💀"); return; }
-  const msgInput=document.getElementById('messageInput'); let text=msgInput.value.trim(); if(!text) return;
-  const colRef=currentPrivateServer?collection(db,"privateServers",currentPrivateServer.id,"messages"):collection(db,currentRoom);
-  await addDoc(colRef,{ text, userId:currentUser.uid, timestamp:new Date() });
-  msgInput.value=''; lastMessageTime=Date.now();
-};
-window.sendImage=function(){
-  const canSendImage = (currentRoom === 'memes') || (currentPrivateServer && currentPrivateServer.allowImages);
-  if (!canSendImage) return;
-
-  const file=document.getElementById('imageUpload').files[0]; if(!file) return;
-  const reader=new FileReader(); reader.onloadend=async function(){
-    const colRef=currentPrivateServer?collection(db,"privateServers",currentPrivateServer.id,"messages"):collection(db,currentRoom);
-    await addDoc(colRef,{ image:reader.result, userId:currentUser.uid, timestamp:new Date() });
-    document.getElementById('imageUpload').value='';
-  }; reader.readAsDataURL(file);
-};
-window.openProfile=function(){
-  document.getElementById('profileDiv').style.display='block';
-  document.getElementById('profilePfp').src=currentUserPfp;
-  document.getElementById('newName').value=currentUser.displayName;
-};
-window.previewPfp=function(event){
-  const file=event.target.files[0]; if(!file) return;
-  const reader=new FileReader(); reader.onloadend=function(){ newPfpData=reader.result; document.getElementById('profilePfp').src=newPfpData; };
-  reader.readAsDataURL(file);
-};
-window.updateProfile=async function(){
-  if(!currentUser) return;
-  const newName=document.getElementById('newName').value.trim();
-  const data={}; if(newName){ data.name=newName; currentUser.displayName=newName; }
-  if(newPfpData){ data.pfp=newPfpData; currentUserPfp=newPfpData; }
-  await setDoc(doc(db,"users",currentUser.uid),data,{ merge:true });
-  userProfiles[currentUser.uid]={ name:currentUser.displayName, pfp:currentUserPfp };
-  document.getElementById('profileDiv').style.display='none'; newPfpData=null;
-  loadMessages();
-};
-
-// private server stuff
-const serversRef=collection(db,"privateServers");
-window.togglePrivateServers=function(){
-  const div=document.getElementById('privateServersDiv'); div.style.display=div.style.display==='none'?'block':'none';
-  if(div.style.display==='block') loadPrivateServers();
-};
-window.showCreateServerForm=function(){ const form=document.getElementById('createServerForm'); form.style.display=form.style.display==='none'?'block':'none'; };
-window.createServer=async function(){
-  const name=document.getElementById('newServerName').value.trim();
-  const allowImages=document.getElementById('allowImages').checked;
-  const emails=document.getElementById('inviteEmails').value.split(',').map(e=>e.trim()).filter(Boolean);
-  if(!name||emails.length===0){ alert("Enter name and at least one email"); return; }
-  if(!emails.includes(currentUser.email)) emails.push(currentUser.email);
-  await addDoc(serversRef,{ name, allowImages, members:emails, creator:currentUser.email });
-  document.getElementById('createServerForm').style.display='none';
-  loadPrivateServers();
-};
-window.loadPrivateServers=function(){
-  const myServersDiv=document.getElementById('myServers'); myServersDiv.innerHTML='';
-  onSnapshot(serversRef, snapshot=>{
-    myServersDiv.innerHTML='';
-    snapshot.docs.forEach(docSnap=>{
-      const server=docSnap.data();
-      if(server.members.includes(currentUser.email)){
-        const btn=document.createElement('button'); btn.textContent=server.name;
-        btn.onclick=()=>{
-            currentPrivateServer={id:docSnap.id,...server};
-            currentRoom=docSnap.id;
-            document.getElementById('chatHeader').textContent=server.name;
-            document.getElementById('imageButton').style.display = server.allowImages ? 'inline-block' : 'none';
-            loadMessages();
-        };
-        myServersDiv.appendChild(btn);
+    // goodbye inspect element user hope you had a fun time looking at the code and remeber CUSTOM CLIENT = BAN!
+    document.getElementById("messageInput").addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
       }
     });
-  });
-};
-// goodbye inspect element user hope you had a fun time looking at the code and remeber CUSTOM CLIENT = BAN!
-document.getElementById("messageInput").addEventListener("keydown", e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); sendMessage(); } });
-document.getElementById('imageUpload').addEventListener('change', sendImage);
-window.addEventListener("load",()=>{
-  if(localStorage.getItem("darkMode")==="true") document.body.classList.add("dark-mode");
-  const savedEmail=localStorage.getItem("email"); const savedPassword=localStorage.getItem("password");
-  if(savedEmail&&savedPassword){ document.getElementById("email").value=savedEmail; document.getElementById("password").value=savedPassword; login(); }
-});
+
+    document.getElementById('imageUpload').addEventListener('change', sendImage);
+
+    window.addEventListener("load", () => {
+      if (localStorage.getItem("darkMode") === "true") document.body.classList.add("dark-mode");
+      const savedEmail = localStorage.getItem("email");
+      const savedPassword = localStorage.getItem("password");
+      if (savedEmail && savedPassword) {
+        document.getElementById("email").value = savedEmail;
+        document.getElementById("password").value = savedPassword;
+        login();
+      }
+    });
 </script>
 </body>
 </html>
